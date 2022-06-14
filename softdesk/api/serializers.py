@@ -1,20 +1,36 @@
+from multiprocessing import context
 from django.contrib.auth.models import User
 
-from rest_framework.serializers import ModelSerializer, SerializerMethodField, ValidationError
+from rest_framework.serializers import SlugRelatedField, CurrentUserDefault, PrimaryKeyRelatedField, ModelSerializer, SerializerMethodField, ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import ValidationError
+from rest_framework.decorators import action
 
-from api.models import Project, Issue, Comment, Contributor
+from django_enum_choices.fields import EnumChoiceField
+
+from api.models import Project, Issue, Comment, Contributor, RoleEnum
 
 
 class CommentListSerializer(ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['description']
+        fields = ['comment_id', 'description', 'created_time']
+        read_only_fields = ['comment_id', 'author_user_id', 'issue_id']
 
 
 class CommentDetailSerializer(ModelSerializer):
+
+    author_user_id = SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field="username"
+    )
+    issue_id = SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field="title"
+    )
 
     class Meta:
         model = Comment
@@ -26,7 +42,16 @@ class IssueListSerializer(ModelSerializer):
 
     class Meta:
         model = Issue
-        fields = ['issue_id', 'title', 'status']
+        fields = ['issue_id', 'title', 'desc',
+                  'tag', 'priority', 'status', 'assignee_user_id', 'created_time']
+        read_only_fields = ['project_id', 'author_user_id']
+
+    def validate_assignee_user_id(self, value):
+        print(self.context['project_id'], value)
+        project_id = self.context['project_id']
+        if not Contributor.objects.filter(user_id=value, project_id=project_id).exists():
+            raise ValidationError('Assignee user id not in contributor')
+        return value
 
 
 class IssueDetailSerializer(ModelSerializer):
@@ -37,6 +62,7 @@ class IssueDetailSerializer(ModelSerializer):
         model = Issue
         fields = ['issue_id', 'title', 'desc', 'tag', 'priority', 'project_id',
                   'status', 'author_user_id', 'assignee_user_id', 'created_time', 'comments']
+        read_only_fields = ['project_id']
 
     def get_comments(self, instance):
         queryset = Comment.objects.filter(issue_id=instance)
@@ -48,13 +74,7 @@ class ProjectListSerializer(ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['project_id', 'title',
-                  'description', 'type']
-
-    def validate_title(self, value):
-        if Project.objects.filter(title=value).exists():
-            raise ValidationError('Project title already exists')
-        return value
+        fields = ['project_id', 'title', 'description', 'type']
 
 
 class ProjecDetailSerializer(ModelSerializer):
@@ -75,15 +95,27 @@ class ContributorListSerializer(ModelSerializer):
 
     class Meta:
         model = Contributor
-        fields = ['user_id', 'role']
+        fields = ['id', 'user_id', 'project_id', 'role']
+        read_only_fields = ['project_id']
+
+    def validate_user_id(self, value):
+        if Contributor.objects.filter(user_id=value).exists():
+            raise ValidationError('User already contributor of project')
+        return value
 
 
 class ContributorDetailSerializer(ModelSerializer):
 
+    user = SerializerMethodField()
+
     class Meta:
         model = Contributor
-        fields = ['user_id', 'project_id',
-                  'permission', 'role']
+        fields = ['id', 'user_id', 'project_id', 'role', 'user']
+
+    def get_user(self, instance):
+        queryset = User.objects.get(id=instance.user_id.id)
+        serializer = UserDetailSerializer(queryset, many=False)
+        return serializer.data
 
 
 class TokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -91,27 +123,37 @@ class TokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super(TokenObtainPairSerializer, cls).get_token(user)
-
         token['username'] = user.username
         return token
-
-
-class UserSerializer(ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ['username', 'password']
 
 
 class RegisterSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['id', 'username', 'password', 'first_name', 'last_name']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
     def create(self, validated_data):
-        user = User.objects.create_user(
-            validated_data['username'], validated_data['password'])
-
+        user = User.objects.create_user(validated_data['username'],
+                                        password=validated_data['password'],
+                                        first_name=validated_data['first_name'],
+                                        last_name=validated_data['last_name']
+                                        )
         return user
+
+
+class UserListSerializer(ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+
+
+class UserDetailSerializer(ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name']

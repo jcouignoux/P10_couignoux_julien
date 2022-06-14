@@ -1,5 +1,5 @@
-from pyexpat import model
-from random import choices
+from django_enum_choices.fields import EnumChoiceField
+from enum import Enum, unique
 from django.db import models
 from django.conf import settings
 
@@ -8,7 +8,7 @@ from django.conf import settings
 
 class Project(models.Model):
     project_id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=128)
+    title = models.CharField(max_length=128, unique=True)
     description = models.CharField(max_length=8192)
     TYPE_CHOICES = (
         ("B", "BackEnd"),
@@ -19,21 +19,31 @@ class Project(models.Model):
     type = models.CharField(max_length=1, choices=TYPE_CHOICES)
 
     def __str__(self):
-        return self.title + str(self.project_id)
+        return self.title
+
+
+@unique
+class RoleEnum(Enum):
+    AUTHOR = 'Author'
+    MANAGER = 'Manager'
+    CREATOR = 'Creator'
+
+    @classmethod
+    def choices(cls):
+        return [(i, i.value) for i in cls]
 
 
 class Contributor(models.Model):
-    user_id = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
-    project_id = models.ForeignKey(
-        to=Project, on_delete=models.DO_NOTHING)
-    PERM_CHOICES = (
+    user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                related_name='contributing', limit_choices_to={'is_staff': False})
+    project_id = models.ForeignKey(to=Project, on_delete=models.CASCADE,
+                                   related_name='contributed_by')
+    ROLE_CHOICES = (
         ("A", "Author"),
         ("M", "Manager"),
         ("C", "Creator")
     )
-    permission = models.CharField(max_length=1, choices=PERM_CHOICES)
-    role = models.CharField(max_length=128)
+    role = models.CharField(max_length=1, choices=ROLE_CHOICES, default="M")
 
     def __str__(self):
         return self.user_id.username
@@ -56,30 +66,35 @@ class Issue(models.Model):
     )
     priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES)
     project_id = models.ForeignKey(
-        to=Project, on_delete=models.DO_NOTHING)
+        to=Project, on_delete=models.CASCADE)
     STATUS_CHOICES = (
         ("T", "ToDo"),
         ("I", "InProgress"),
         ("C", "Closed")
     )
     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
-    author_user_id = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='issue_author')
-    assignee_user_id = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='issue_assignee', default=author_user_id)
+    author_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                       related_name='issue_author', limit_choices_to={'is_staff': False})
+    assignee_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                         related_name='issue_assignee', limit_choices_to={'is_staff': False})
+    #  related_name='issue_assignee', limit_choices_to=Contributor.objects.filter(project_id=project_id))
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
+    # def assignee_limit_choice(self):
+        # assignees = [(Contributor.object) for Contribut]
+        # return assignees
 
 
 class Comment(models.Model):
     comment_id = models.AutoField(primary_key=True)
     description = models.CharField(max_length=8192)
     author_user_id = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
+        to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'is_staff': False})
     issue_id = models.ForeignKey(
-        to=Issue, on_delete=models.DO_NOTHING)
+        to=Issue, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

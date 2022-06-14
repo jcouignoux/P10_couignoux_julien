@@ -1,16 +1,15 @@
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
+from django.db import transaction
 
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from knox.models import AuthToken
-from knox.views import LoginView as KnoxLoginView
+from rest_framework.decorators import action, permission_classes
 
-from api.models import Project, Issue, Comment, Contributor
-from api.serializers import ProjectListSerializer, ProjecDetailSerializer, UserSerializer, RegisterSerializer, IssueListSerializer, IssueDetailSerializer, CommentListSerializer, CommentDetailSerializer, ContributorListSerializer, ContributorDetailSerializer
-
+from api.models import Project, Issue, Comment, Contributor, RoleEnum
+from api.serializers import ProjectListSerializer, ProjecDetailSerializer, IssueListSerializer, IssueDetailSerializer, CommentListSerializer, CommentDetailSerializer, ContributorListSerializer, ContributorDetailSerializer, RegisterSerializer, UserListSerializer
+from api.permissions import IsAuthenticated
 # Create your views here.
 
 
@@ -24,14 +23,32 @@ class MultipleSerializerMixin:
         return super().get_serializer_class()
 
 
-class ProjectViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
+class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjecDetailSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # print(self.request.user)
-        return Project.objects.all()
+        user = self.request.user
+        contributor = Contributor.objects.filter(user_id=user).all()
+        return Project.objects.filter(contributed_by__in=contributor)
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        project = serializer.save()
+        contributor = Contributor.objects.create(
+            user_id=request.user,
+            project_id=project,
+            role=RoleEnum.CREATOR
+        )
+
+        return Response({
+            'project': ProjectListSerializer(project, context=self.get_serializer_context()).data,
+            'message': "Project and Contributor created successfully.",
+        })
 
 
 class AdminProjectViewset(MultipleSerializerMixin, ModelViewSet):
@@ -42,17 +59,33 @@ class AdminProjectViewset(MultipleSerializerMixin, ModelViewSet):
     queryset = Project.objects.all()
 
 
-class IssueViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
+class IssueViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
 
         return Issue.objects.filter(project_id=self.kwargs['project_pk'])
 
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.context['project_id'] = Project.objects.get(
+            project_id=self.kwargs['project_pk'])
+        serializer.is_valid(raise_exception=True)
 
-class CommentViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
+        issue = serializer.save(
+            author_user_id=request.user, project_id=serializer.context['project_id'])
+
+        return Response({
+            'contributor': IssueListSerializer(issue, context=self.get_serializer_context()).data,
+            'message': "Contributor added successfully.",
+        })
+
+
+class CommentViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
@@ -62,7 +95,7 @@ class CommentViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
         return Comment.objects.filter(issue_id=self.kwargs['issue_pk'])
 
 
-class ContributorViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
+class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = ContributorListSerializer
     detail_serializer_class = ContributorDetailSerializer
@@ -71,8 +104,20 @@ class ContributorViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
 
         return Contributor.objects.filter(project_id=self.kwargs['project_pk'])
 
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        project_id = Project.objects.get(project_id=self.kwargs['project_pk'])
+        contributor = serializer.save(project_id=project_id)
 
-class AdminIssueViewsetViewset(MultipleSerializerMixin, ModelViewSet):
+        return Response({
+            'contributor': ContributorListSerializer(contributor, context=self.get_serializer_context()).data,
+            'message': "Contributor added successfully.",
+        })
+
+
+class AdminIssueViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
@@ -80,31 +125,16 @@ class AdminIssueViewsetViewset(MultipleSerializerMixin, ModelViewSet):
     queryset = Issue.objects.all()
 
 
-class LoginAPI(KnoxLoginView):
-
-    permission_classes = (AllowAny,)
-
-    def post(self, request, format=None):
-        serializer = AuthTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        login(request, user)
-
-        return super(LoginAPI, self).post(request, format=None)
-
-
-class RegisterView(GenericAPIView):
-
-    permission_classes = (AllowAny,)
+@ permission_classes([AllowAny])
+class RegisterAPI(GenericAPIView):
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=self.request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        response = Response({
-            'user': UserSerializer(user, context=self.get_serializer_context()).data,
-            'token': AuthToken.objects.create(user)[1]
-        })
 
-        return response
+        return Response({
+            'user': RegisterSerializer(user, context=self.get_serializer_context()).data,
+            'message': "User created successfully.",
+        })
