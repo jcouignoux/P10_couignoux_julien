@@ -94,7 +94,7 @@ class Comment(models.Model):
     author_user_id = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'is_staff': False})
     issue_id = models.ForeignKey(
-        to=Issue, on_delete=models.CASCADE)
+        to=Issue, on_delete=models.CASCADE, related_name='comments')
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

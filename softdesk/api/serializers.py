@@ -1,10 +1,9 @@
-from multiprocessing import context
+from lib2to3.pgen2.tokenize import TokenError
 from django.contrib.auth.models import User
 
-from rest_framework.serializers import SlugRelatedField, CurrentUserDefault, PrimaryKeyRelatedField, ModelSerializer, SerializerMethodField, ValidationError
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.serializers import Serializer, ModelSerializer, SerializerMethodField, ValidationError
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, RefreshToken
 from rest_framework.exceptions import ValidationError
-from rest_framework.decorators import action
 
 from django_enum_choices.fields import EnumChoiceField
 
@@ -21,17 +20,6 @@ class CommentListSerializer(ModelSerializer):
 
 class CommentDetailSerializer(ModelSerializer):
 
-    author_user_id = SlugRelatedField(
-        many=False,
-        read_only=True,
-        slug_field="username"
-    )
-    issue_id = SlugRelatedField(
-        many=False,
-        read_only=True,
-        slug_field="title"
-    )
-
     class Meta:
         model = Comment
         fields = ['comment_id', 'description',
@@ -46,12 +34,16 @@ class IssueListSerializer(ModelSerializer):
                   'tag', 'priority', 'status', 'assignee_user_id', 'created_time']
         read_only_fields = ['project_id', 'author_user_id']
 
-    def validate_assignee_user_id(self, value):
-        print(self.context['project_id'], value)
-        project_id = self.context['project_id']
-        if not Contributor.objects.filter(user_id=value, project_id=project_id).exists():
-            raise ValidationError('Assignee user id not in contributor')
-        return value
+    # def validate_assignee_user_id(self, value):
+    #     print(self)
+    #     project_id = self.context['project_id']
+    #     if not Contributor.objects.filter(user_id=value, project_id=project_id).exists():
+    #         raise ValidationError('Assignee user id not in contributor')
+    #     return value
+
+    # def update(self, request, *args, **kwargs):
+    #     print('test')
+    #     return self.partial_update(request, *args, **kwargs)
 
 
 class IssueDetailSerializer(ModelSerializer):
@@ -157,3 +149,26 @@ class UserDetailSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name']
+
+
+class LoginSerializer(ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['username', 'password']
+
+
+class LogoutSerializer(Serializer):
+    # refresh = CharField()
+    refresh = 'test'
+
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+
+        return attrs
+
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.token).blacklist()
+        except TokenError:
+            self.fail('bad token')
