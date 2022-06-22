@@ -1,62 +1,129 @@
 # P10_couignoux_julien
 
 ![](docs/logo.png)
+***
 
-# SoftDesk-API: API permettant le suivi des problèmes techniques.
+## Sommaire
+
+* [I. Project Introduction](#chapter1)
+    * [Application description](#section1_1)
+* [II. Project install](#chapter2)
+    * [Technologies Used](#section2_1)
+    * [Usage](#section2_2)
+    * [Note](#section2_3)
+* [III. Application usage](#chapter3)
+* [IV. DataBase](#chapter4)
+    * [Default password](#section4_1)
+    * [Super-User](#section4_2)
+    * [Users](#section4_3)
+* [V. Flake8 report](#chapter5)
+
+***
+## I. Project Introduction <a class="anchor" id="chapter1"></a>
 
 SoftDesk, une société d'édition de logiciels de développement et de collaboration, a décidé de publier une application permettant de remonter et suivre des problèmes techniques (issue tracking system). Cette solution s’adresse à des entreprises clientes, en B2B.
 
-## Installation
+### Application description <a class="anchor" id="section1_1"></a>
+Une application de suivi des problèmes pour les trois plateformes (site web, applications Android et iOS).
+L'application permettra essentiellement aux utilisateurs de créer divers projets, d'ajouter des utilisateurs à des projets spécifiques, de créer des problèmes au sein des projets et d'attribuer des libellés à ces problèmes en fonction de leurs priorités, de balises, etc.
+Les trois applications exploiteront les points de terminaison d'API qui serviront les données.
 
-Cette API exécutable localement peut être installée en suivant les étapes décrites ci-dessous. L'usage de pipenv est recommandé, mais des instuctions utilisant venv et pip sont également fournies plus bas. Si pipenv n'est pas encore installé sur votre ordinateur, vous trouverez des instuctions d'installation détaillées [sur cette page](docs/pipenv/installation-fr.md).
+## II. Project installation <a class="anchor" id="chapter2"></a>
 
-### Installation et exécution de l'application avec pipenv
+### Technologies Used <a class="anchor" id="section2_1"></a>
+* Python3  
+* Django4  
+* Django Rest Framework
 
-1. Cloner ce dépôt de code à l'aide de la commande `$ git clone clone https://github.com/OpenClassrooms-Student-Center/OCMovies-API-EN-FR.git` (vous pouvez également télécharger le code [en temps qu'archive zip](https://github.com/OpenClassrooms-Student-Center/OCMovies-API-EN-FR/archive/refs/heads/master.zip))
-2. Rendez-vous depuis un terminal à la racine du répertoire ocmovies-api-fr avec la commande `$ cd ocmovies-api-fr`
-3. Installez les dépendances du projet à l'aide de la commande `pipenv install` 
-4. Créer et alimenter la base de données à l'aide de la commande `pipenv run python manage.py create_db`
-5. Démarrer le serveur avec `pipenv run python manage.py runserver`
+### Usage <a class="anchor" id="section2_2"></a>
+* Install python 3: https://www.python.org/downloads/
+* Create and activate a virtual env: https://docs.python.org/3/library/venv.html
+* Install requirements: pip install -r requirements.txt
+* Clone the git project: git clone git@github.com:jcouignoux/P10_couignoux_julien.git
+* python django_web_app/manage.py makemigrations
+* python django_web_app/manage.py migrate
+* python django_web_app/manage.py runserver
+* In your web browser enter the address : http://localhost:8000/projects/ or http://127.0.0.1:8000/projects/
 
-Lorsque le serveur fonctionne, après l'étape 5 de la procédure, l'API OCMovies peut être interrogée à partir des points d'entrée commençant par l'url de base [http://localhost:8000/api/v1/](http://localhost:8000/api/v1/). Le point d'entrée principal permettant de consulter les films est [http://localhost:8000/api/v1/titles](http://localhost:8000/api/v1/titles/). Si vous accédez à cette url depuis un navigateur,ce dernier vous présentera une interface naviguable servant de documentation et de laboratoire d'expériementation. Vous trouvez également une documentation plus formelle en bas de ce README.
+### Note <a class="anchor" id="section2_3"></a>
+The Secret_Key required for the execution and debugging of project is not removed from the project code. So you can use the project as your college mini-project or by using the project code you can build your own project.
+***
 
-Les étapes 1 à 4 ne sont requises que pout l'installation initiale. Pour les lancements ultérieurs du serveur de l'API, il suffit d'exécuter l'étape 5 à partir du répertoire racine du projet.
-
-### Installation et exécution de l'application sans pipenv (avec venv et pip)
-
-1. Cloner ce dépôt de code à l'aide de la commande `$ git clone clone https://github.com/OpenClassrooms-Student-Center/OCMovies-API-EN-FR.git` (vous pouvez également télécharger le code [en temps qu'archive zip](https://github.com/OpenClassrooms-Student-Center/OCMovies-API-EN-FR/archive/refs/heads/master.zip))
-2. Rendez-vous depuis un terminal à la racine du répertoire ocmovies-api-fr avec la commande `$ cd ocmovies-api-fr`
-3. Créer un environnement virtuel pour le projet avec `$ python -m venv env` sous windows ou `$ python3 -m venv env` sous macos ou linux.
-4. Activez l'environnement virtuel avec `$ env\Scripts\activate` sous windows ou `$ source env/bin/activate` sous macos ou linux.
-5. Installez les dépendances du projet avec la commande `$ pip install -r requirements.txt`
-6. Créer et alimenter la base de données avec la commande `$ python manage.py create_db`
-7. Démarrer le serveur avec `$ python manage.py runserver`
-
-Lorsque le serveur fonctionne, après l'étape 7 de la procédure, l'API OCMovies peut être interrogée à partir des points d'entrée commençant par l'url de base [http://localhost:8000/api/v1/](http://localhost:8000/api/v1/). Le point d'entrée principal permettant de consulter les films est [http://localhost:8000/api/v1/titles](http://localhost:8000/api/v1/titles/). Si vous accédez à cette url depuis un navigateur,ce dernier vous présentera une interface naviguable servant de documentation et de laboratoire d'expériementation. Vous trouvez également une documentation plus formelle en bas de ce README.
-
-Les étapes 1 à 6 ne sont requises que pout l'installation initiale. Pour les lancements ultérieurs du serveur de l'API, il suffit d'exécuter les étapes 4 et 7 à partir du répertoire racine du projet.
-
+## III. Application usage <a class="anchor" id="chapter3"></a>
 ## Utilisation et documentation des points d'entrée
 
-Une fois que vous avez lancé le serveur, vous pouvez lire la documentation depuis un navigateur web par le biais de l'interface navigable disponible ici [http://localhost:8000/api/v1/titles/](http://localhost:8000/api/v1/titles/). Cette interface naviguable vous sert à la fois de source de documentation et de laboratoire d'expérimentation. L'API actuelle ne fournit que les points d'entrées suivants. Tous ces points d'entrée sont en lecture seule et supportent exclusivement les requêtes HTTP utilisant la **méthode GET**: 
+* http://127.0.0.1:8000/signup/ : Create a new account
+    * POST :
+        * username
+        * password
+        * last_name (not required)
+        * for_name (not required)
 
-- Rechercher et filtrer des films: [http://localhost:8000/api/v1/titles/](http://localhost:8000/api/v1/titles/). Vous pouvez tester directement chaque filtre en accédant à l'URL ci-dessus depuis un navigateur web. Les filtres disponibles sont:
+* http://127.0.0.1:8000/login/ : 
+    * POST :
+        * username
+        * password
 
-   - `year=<year>`, `min_year=<year>` ou `max_year=<year>` pour obtenir des films filtrés par années. Le premier de ces filtres réalise une correspondance exacte lors de la recherche.
-   - `imdb_score_min=<score>` et `imdb_score_max<score>` pour obtenir des films avec un score imdb inférieurs ou supérieur à une note donnée.
-   - `title=<title>` ou `title_contains=<string>` pour obtenir des films dont le titre correspond à la chaine de caractères recherchée. Le premier effectue une recherche avec une correspondance extacte tandis que le second recherche les titres contenant le terme recherché. La recherche est indédendante de la casse.
-   - `director=<director-name>` ou `director_contains=<string>` pour obtenir des films dont un réalisateur correspond à la chaine de caractères recherchée. Le premier effectue une recherche avec une correspondance extacte tandis que le second filtre en fonction des réalisateurs contenant le terme recherché. La recherche est indédendante de la casse.
-   - `writer=<name>` ou `writer_contains=<string>` pour obtenir des films dont un auteur correspond à la chaine de caractères recherchée. Le premier effectue une recherche avec une correspondance extacte tandis que le second filtre en fonction des auteurs contenant le terme recherché. La recherche est indédendante de la casse.
-   - `actor=<name>` ou `actor_contains=<string>` pour obtenir des films dont un des acteurs correspond à la chaine de caractères recherchée. Le premier effectue une recherche avec une correspondance extacte tandis que le second recherche filtre en fonction des acteurs contenant le terme recherché. La recherche est indédendante de la casse.
-   - `genre=<name>` ou `genre_contains=<string>` pour obtenir des films dont un genre correspond à la chaine de caractères recherchée. Le premier effectue une recherche avec une correspondance extacte tandis que le second filtre en fonction des genres contenant le terme recherché. La recherche est indédendante de la casse.
-   - `country=<name>` ou `country_contains=<string>` pour obtenir des films dont un pays correspond à la chaine de caractères recherchée. Le premier effectue une recherche avec une correspondance extacte tandis que le second filtre en fonction des pays contenant le terme recherché. La recherche est indédendante de la casse.
-   - `lang=<name>` ou `lang_contains=<string>` pour obtenir des films dont la langue correspond la chaine de caractères recherchée. Le premier effectue une recherche avec une correspondance extacte tandis que le second filtre en fonction des langues contenant le terme recherché. La recherche est indédendante de la casse.
-   - `company=<name>` ou `company_contains=<string>` pour obtenir des films dont la compagnie de production correspond à la chaine de caractères recherchée. Le premier effectue une recherche avec une correspondance extacte tandis que le second filtre en fonction des compagnies contenant le terme recherché. La recherche est indédendante de la casse.
-   - `rating=<name>` ou `rating_contains=<string>` pour obtenir des films dont le politique de restriction correspond à la chaine de caractères recherchée. Le premier effectue une recherche avec une correspondance extacte tandis que le second filtre en fonction des restrictions contenant le terme recherché. La recherche est indédendante de la casse.
-   - `sort_by=<field>` pour obtenir des films triés selon un ordre particulier. Par exemple, utiliser `sort_by=title` pour trier les films selon l'ordre alphabétique de teur titre et `sort_by=-title` pour trier les films dans le sens inverse. Il est également possible de trier par critères multiples en séparant les critères par des virgules comme dans `sort_by=-year,title` qui affiche d'abord les films les plus récents, puis trie les films de la même années par ordre alphabétique.
+* http://127.0.0.1:8000/token/ : get access token and refresh token
+    * POST :
+        * username
+        * password
 
-- Demander des informations détaillées sur un film dont on connait l'identifiant: [http://localhost:8000/api/v1/titles/499549](http://localhost:8000/api/v1/titles/499549) où 499549 est l'identifiant (`id`) du film "Avatar".
-- Rechercher les genres disponibles: [http://localhost:8000/api/v1/genres/](http://localhost:8000/api/v1/genres/). Les filtres disponibles sont:
-   - `name_contains=<search string>` pour n'afficher que les genres dont la nom contient la chaine de caractère recherchée.
-   - `movie_title_contains=<search string>` pour rechercher les genres associés à film dont le titre contient la chaine de caractère recherchée.
-   a particular movie searched by title.
+* http://127.0.0.1:8000/token/refresh/ : refresh access token
+    * POST :
+        * refresh token
+
+* http://127.0.0.1:8000/projects/ : list or create new project
+    * GET : list authorized projects
+    * POST :
+        * title
+        * description
+        * type ("B": "BackEnd", "F": "FrontEnd", "I": "iOS", "A": "Android")
+
+* http://127.0.0.1:8000/projects/project_id/ : view details or update own project
+    * POST : (only Creator)
+        * username
+        * password
+    * DELETE (only Creator)
+
+* http://127.0.0.1:8000/projects/project_id/users/ : list or create new contributor
+    * GET : list authorized projects
+    * POST :
+        * user
+        * role ("A": "Author", "M": "Manager", "C": "Creator")
+
+* http://127.0.0.1:8000/projects/project_id/users/user_id/ : view details or update contributor
+    * POST : (only Creator)
+        * user
+        * role ("A": "Author", "M": "Manager", "C": "Creator")
+    * DELETE (only Creator)
+
+* http://127.0.0.1:8000/projects/project_id/issues/ : list or create new contributor
+    * GET : list authorized issues
+    * POST :
+        * title
+        * desc
+        * tag ("B": "Bug", "I": "Improvement", "T": "Task")
+        * priority ("H": "Hight", "M": "Medium"), "L": "Low")
+        * status ("T": "ToDo", "I": "InProgress", ("C": "Closed")
+        * assignee_user_id
+
+* http://127.0.0.1:8000/projects/project_id/issues/issue_id/ : view details or update own issue
+    * POST : (only author_user_id)
+        * title
+        * desc
+        * tag ("B": "Bug", "I": "Improvement", "T": "Task")
+        * priority ("H": "Hight", "M": "Medium"), "L": "Low")
+        * status ("T": "ToDo", "I": "InProgress", ("C": "Closed")
+        * assignee_user_id
+    * DELETE (author_user_id)
+
+* http://127.0.0.1:8000/projects/project_id/issues/issue_id/comments/ : list or create new comment
+    * GET : list authorized comments
+    * POST :
+        * description
+
+* http://127.0.0.1:8000/projects/project_id/issues/issue_id/comments/comment_id/ : view details or update own comment
+    * POST : (only author_user_id)
+        * description
+    * DELETE (author_user_id)
