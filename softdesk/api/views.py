@@ -1,15 +1,15 @@
-from django.contrib.auth import login, logout, authenticate
-from django.db import transaction
+from django.contrib.auth import logout, authenticate
+from django.db import IntegrityError, transaction
 
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework.decorators import action, permission_classes
+from rest_framework.decorators import permission_classes
 from rest_framework.mixins import UpdateModelMixin
 
-from api.models import Project, Issue, Comment, Contributor, RoleEnum
+from api.models import Project, Issue, Comment, Contributor
 from api.serializers import ProjectListSerializer, ProjecDetailSerializer, IssueListSerializer, IssueDetailSerializer, CommentListSerializer, CommentDetailSerializer, ContributorListSerializer, ContributorDetailSerializer, RegisterSerializer, UserListSerializer, LogoutSerializer, LoginSerializer, TokenObtainPairSerializer
 from api.permissions import AuthorOrReadOnly
 # Create your views here.
@@ -62,12 +62,12 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
             status=status.HTTP_201_CREATED)
 
 
-class AdminProjectViewset(MultipleSerializerMixin, ModelViewSet):
+# class AdminProjectViewset(MultipleSerializerMixin, ModelViewSet):
 
-    serializer_class = ProjectListSerializer
-    detail_serializer_class = ProjecDetailSerializer
-    permission_classes = [IsAuthenticated]
-    queryset = Project.objects.all()
+#     serializer_class = ProjectListSerializer
+#     detail_serializer_class = ProjecDetailSerializer
+#     permission_classes = [IsAuthenticated]
+#     queryset = Project.objects.all()
 
 
 class IssueViewset(MultipleSerializerMixin, ModelViewSet, UpdateModelMixin):
@@ -135,11 +135,18 @@ class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         project_id = Project.objects.get(project_id=self.kwargs['project_pk'])
-        contributor = serializer.save(project_id=project_id)
+        try:
+            cont = serializer.save(project_id=project_id)
+            contributor = ContributorListSerializer(
+                cont, context=self.get_serializer_context()).data
+            message = "Contributor added successfully."
+        except IntegrityError:
+            contributor = ''
+            message = "User already contributor of project."
 
         return Response({
-            'contributor': ContributorListSerializer(contributor, context=self.get_serializer_context()).data,
-            'message': "Contributor added successfully."},
+            'contributor': contributor,
+            'message': message},
             status=status.HTTP_201_CREATED)
 
 
@@ -186,7 +193,9 @@ class LoginAPIView(GenericAPIView):
             serializer = self.serializer_class(user)
 
             return Response({
-                'message': "User logged successfully."
+                'message': "User logged successfully.",
+                # 'user': user.username,
+                # 'pw': user.password
             },
                 status=status.HTTP_200_OK
             )

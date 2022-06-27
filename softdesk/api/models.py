@@ -1,5 +1,5 @@
-from django_enum_choices.fields import EnumChoiceField
-from enum import Enum, unique
+# from django_enum_choices.fields import EnumChoiceField
+# from enum import Enum, unique
 from django.db import models
 from django.conf import settings
 
@@ -22,19 +22,19 @@ class Project(models.Model):
         return self.title
 
 
-@unique
-class RoleEnum(Enum):
-    AUTHOR = 'Author'
-    MANAGER = 'Manager'
-    CREATOR = 'Creator'
+# @unique
+# class RoleEnum(Enum):
+#     AUTHOR = 'Author'
+#     MANAGER = 'Manager'
+#     CREATOR = 'Creator'
 
-    @classmethod
-    def choices(cls):
-        return [(i, i.value) for i in cls]
+#     @classmethod
+#     def choices(cls):
+#         return [(i, i.value) for i in cls]
 
 
 class Contributor(models.Model):
-    user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+    user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING,
                                 related_name='contributing', limit_choices_to={'is_staff': False})
     project_id = models.ForeignKey(to=Project, on_delete=models.CASCADE,
                                    related_name='contributed_by')
@@ -44,6 +44,9 @@ class Contributor(models.Model):
         ("C", "Creator")
     )
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default="M")
+
+    class Meta:
+        unique_together = ('user_id', 'project_id', )
 
     def __str__(self):
         return self.user_id.username
@@ -92,7 +95,7 @@ class Comment(models.Model):
     comment_id = models.AutoField(primary_key=True)
     description = models.CharField(max_length=8192)
     author_user_id = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'is_staff': False})
+        to=settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, limit_choices_to={'is_staff': False})
     issue_id = models.ForeignKey(
         to=Issue, on_delete=models.CASCADE, related_name='comments')
     created_time = models.DateTimeField(auto_now_add=True)

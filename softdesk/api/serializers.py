@@ -1,13 +1,12 @@
 from lib2to3.pgen2.tokenize import TokenError
 from django.contrib.auth.models import User
 
-from rest_framework.serializers import Serializer, ModelSerializer, SerializerMethodField, ValidationError
+from rest_framework.serializers import Serializer, ModelSerializer, SerializerMethodField
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, RefreshToken
-from rest_framework.exceptions import ValidationError
 
 from django_enum_choices.fields import EnumChoiceField
 
-from api.models import Project, Issue, Comment, Contributor, RoleEnum
+from api.models import Project, Issue, Comment, Contributor
 
 
 class CommentListSerializer(ModelSerializer):
@@ -90,10 +89,10 @@ class ContributorListSerializer(ModelSerializer):
         fields = ['id', 'user_id', 'project_id', 'role']
         read_only_fields = ['project_id']
 
-    def validate_user_id(self, value):
-        if Contributor.objects.filter(user_id=value).exists():
-            raise ValidationError('User already contributor of project')
-        return value
+    # def validate_user_id(self, value):
+    #     if Contributor.objects.filter(user_id=value).exists():
+    #         raise ValidationError('User already contributor of project')
+    #     return value
 
 
 class ContributorDetailSerializer(ModelSerializer):

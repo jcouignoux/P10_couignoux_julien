@@ -4,8 +4,8 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_nested.routers import NestedSimpleRouter
 
-# , RegisterView, LoginAPI
-from api.views import ProjectViewset, AdminProjectViewset, ContributorViewset, IssueViewset, CommentViewset, RegisterAPIView, LogoutAPIView, LoginAPIView
+from api.views import ProjectViewset, ContributorViewset, IssueViewset, CommentViewset, RegisterAPIView, LogoutAPIView, LoginAPIView
+
 
 router = routers.SimpleRouter()
 router.register('projects', ProjectViewset, basename='projects')
@@ -22,8 +22,6 @@ issues_router = NestedSimpleRouter(projects_router, 'issues', lookup='issue')
 issues_router.register('comments', CommentViewset,
                        basename='projects-issues-comments')
 
-router.register('admin/projects', AdminProjectViewset,
-                basename='admin-projects')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -31,7 +29,7 @@ urlpatterns = [
     path('', include(issues_router.urls)),
     path('signup/', RegisterAPIView.as_view(), name='signup'),
     path('login/', LoginAPIView.as_view(), name='login'),
-    path('tocken/', TokenObtainPairView.as_view(), name='tocken'),
+    path('token/', TokenObtainPairView.as_view(), name='tocken'),
     path('token/refresh/', TokenRefreshView.as_view(), name='refresh_token'),
     path('logout/', LogoutAPIView.as_view(), name='logout'),
 ]
