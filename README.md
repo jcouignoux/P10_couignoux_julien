@@ -12,11 +12,6 @@
     * [Usage](#section2_2)
     * [Note](#section2_3)
 * [III. Application usage](#chapter3)
-* [IV. DataBase](#chapter4)
-    * [Default password](#section4_1)
-    * [Super-User](#section4_2)
-    * [Users](#section4_3)
-* [V. Flake8 report](#chapter5)
 
 ***
 ## I. Project Introduction <a class="anchor" id="chapter1"></a>
@@ -39,7 +34,7 @@ Les trois applications exploiteront les points de terminaison d'API qui serviron
 * Install python 3: https://www.python.org/downloads/
 * Create and activate a virtual env: https://docs.python.org/3/library/venv.html
 * Install requirements: pip install -r requirements.txt
-* Clone the git project: git clone git@github.com:jcouignoux/P10_couignoux_julien.git
+* Clone the git project: [git clone](git@github.com:jcouignoux/P10_couignoux_julien.git)
 * python django_web_app/manage.py makemigrations
 * python django_web_app/manage.py migrate
 * python django_web_app/manage.py runserver
@@ -50,7 +45,9 @@ The Secret_Key required for the execution and debugging of project is not remove
 ***
 
 ## III. Application usage <a class="anchor" id="chapter3"></a>
-## Utilisation et documentation des points d'entrée
+## Entry point documentation
+
+[Postman documentation](https://documenter.getpostman.com/view/16200204/UzBqnjKn)
 
 * http://127.0.0.1:8000/signup/ : Create a new account
     * POST :
