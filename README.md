@@ -22,6 +22,7 @@ SoftDesk, une société d'édition de logiciels de développement et de collabor
 Une application de suivi des problèmes pour les trois plateformes (site web, applications Android et iOS).
 L'application permettra essentiellement aux utilisateurs de créer divers projets, d'ajouter des utilisateurs à des projets spécifiques, de créer des problèmes au sein des projets et d'attribuer des libellés à ces problèmes en fonction de leurs priorités, de balises, etc.
 Les trois applications exploiteront les points de terminaison d'API qui serviront les données.
+***
 
 ## II. Project installation <a class="anchor" id="chapter2"></a>
 
@@ -42,6 +43,9 @@ Les trois applications exploiteront les points de terminaison d'API qui serviron
 
 ### Note <a class="anchor" id="section2_3"></a>
 The Secret_Key required for the execution and debugging of project is not removed from the project code. So you can use the project as your college mini-project or by using the project code you can build your own project.
+
+http://127.0.0.1:8000/adminSD/
+Default superuser : Admin/passw0rd2022
 ***
 
 ## III. Application usage <a class="anchor" id="chapter3"></a>
