@@ -10,7 +10,16 @@ from rest_framework.decorators import permission_classes
 from rest_framework.mixins import UpdateModelMixin
 
 from api.models import Project, Issue, Comment, Contributor
-from api.serializers import ProjectListSerializer, ProjecDetailSerializer, IssueListSerializer, IssueDetailSerializer, CommentListSerializer, CommentDetailSerializer, ContributorListSerializer, ContributorDetailSerializer, RegisterSerializer, UserListSerializer, LogoutSerializer, LoginSerializer, TokenObtainPairSerializer
+from api.serializers import (ProjectListSerializer,
+                             ProjecDetailSerializer,
+                             IssueListSerializer,
+                             IssueDetailSerializer,
+                             CommentListSerializer,
+                             CommentDetailSerializer,
+                             ContributorListSerializer,
+                             ContributorDetailSerializer,
+                             RegisterSerializer,
+                             LoginSerializer)
 from api.permissions import AuthorOrReadOnly
 # Create your views here.
 
@@ -60,14 +69,6 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
             'project': ProjectListSerializer(project, context=self.get_serializer_context()).data,
             'message': "Project and Contributor created successfully."},
             status=status.HTTP_201_CREATED)
-
-
-# class AdminProjectViewset(MultipleSerializerMixin, ModelViewSet):
-
-#     serializer_class = ProjectListSerializer
-#     detail_serializer_class = ProjecDetailSerializer
-#     permission_classes = [IsAuthenticated]
-#     queryset = Project.objects.all()
 
 
 class IssueViewset(MultipleSerializerMixin, ModelViewSet, UpdateModelMixin):
@@ -167,10 +168,6 @@ class RegisterAPIView(GenericAPIView):
 
         if serializer.is_valid():
             user = serializer.save()
-        # return Response({
-        #     'user': RegisterSerializer(user, context=self.get_serializer_context()).data,
-        #     'message': "User created successfully.",
-        # })
             return Response({
                 'user': RegisterSerializer(user, context=self.get_serializer_context()).data,
                 'message': "User created successfully."},
@@ -194,24 +191,8 @@ class LoginAPIView(GenericAPIView):
 
             return Response({
                 'message': "User logged successfully.",
-                # 'user': user.username,
-                # 'pw': user.password
             },
                 status=status.HTTP_200_OK
             )
 
         return Response({'message': "Invalid credentials, try again"}, status=status.HTTP_401_UNAUTHORIZED)
-
-
-class LogoutAPIView(GenericAPIView):
-    serializer_class = LogoutSerializer
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        print('test')
-        logout(request)
-        # serializer = self.serializer_class(data=request.data)
-        # serializer.is_valid(raise_exception=True)
-        # serializer.save()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)

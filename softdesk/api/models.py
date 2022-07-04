@@ -1,5 +1,3 @@
-# from django_enum_choices.fields import EnumChoiceField
-# from enum import Enum, unique
 from django.db import models
 from django.conf import settings
 
@@ -20,17 +18,6 @@ class Project(models.Model):
 
     def __str__(self):
         return self.title
-
-
-# @unique
-# class RoleEnum(Enum):
-#     AUTHOR = 'Author'
-#     MANAGER = 'Manager'
-#     CREATOR = 'Creator'
-
-#     @classmethod
-#     def choices(cls):
-#         return [(i, i.value) for i in cls]
 
 
 class Contributor(models.Model):
@@ -80,15 +67,10 @@ class Issue(models.Model):
                                        related_name='issue_author', limit_choices_to={'is_staff': False})
     assignee_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                          related_name='issue_assignee', limit_choices_to={'is_staff': False})
-    #  related_name='issue_assignee', limit_choices_to=Contributor.objects.filter(project_id=project_id))
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
-
-    # def assignee_limit_choice(self):
-        # assignees = [(Contributor.object) for Contribut]
-        # return assignees
 
 
 class Comment(models.Model):

@@ -1,10 +1,7 @@
-from lib2to3.pgen2.tokenize import TokenError
 from django.contrib.auth.models import User
 
-from rest_framework.serializers import Serializer, ModelSerializer, SerializerMethodField
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, RefreshToken
-
-from django_enum_choices.fields import EnumChoiceField
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from api.models import Project, Issue, Comment, Contributor
 
@@ -32,17 +29,6 @@ class IssueListSerializer(ModelSerializer):
         fields = ['issue_id', 'title', 'desc',
                   'tag', 'priority', 'status', 'assignee_user_id', 'created_time']
         read_only_fields = ['project_id', 'author_user_id']
-
-    # def validate_assignee_user_id(self, value):
-    #     print(self)
-    #     project_id = self.context['project_id']
-    #     if not Contributor.objects.filter(user_id=value, project_id=project_id).exists():
-    #         raise ValidationError('Assignee user id not in contributor')
-    #     return value
-
-    # def update(self, request, *args, **kwargs):
-    #     print('test')
-    #     return self.partial_update(request, *args, **kwargs)
 
 
 class IssueDetailSerializer(ModelSerializer):
@@ -88,11 +74,6 @@ class ContributorListSerializer(ModelSerializer):
         model = Contributor
         fields = ['id', 'user_id', 'project_id', 'role']
         read_only_fields = ['project_id']
-
-    # def validate_user_id(self, value):
-    #     if Contributor.objects.filter(user_id=value).exists():
-    #         raise ValidationError('User already contributor of project')
-    #     return value
 
 
 class ContributorDetailSerializer(ModelSerializer):
@@ -155,19 +136,3 @@ class LoginSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'password']
-
-
-class LogoutSerializer(Serializer):
-    # refresh = CharField()
-    refresh = 'test'
-
-    def validate(self, attrs):
-        self.token = attrs['refresh']
-
-        return attrs
-
-    def save(self, **kwargs):
-        try:
-            RefreshToken(self.token).blacklist()
-        except TokenError:
-            self.fail('bad token')
